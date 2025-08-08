@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .search-focus:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    </style>
+   
+
+
+</head>
+<body class="bg-gray-50">
+    <%- include("includes/flash") %>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <svg class="h-8 w-8 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/>
+                        </svg>
+                        <span class="text-xl font-bold text-gray-800">MediCare</span>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                        <a href="#doctors" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Doctors</a>
+                        <a href="#services" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Services</a>
+                        <a href="#" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
+                        <a href="#" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Login/Logout buttons (shown when not logged in) -->
+                    <% if (!currentUser) { %>
+  <!-- Show login and signup if not logged in -->
+  <div id="authButtons" class="flex items-center space-x-4">
+    <a href="/auth/login">
+      <button class="text-gray-700 hover:text-blue-600 px-4 py-2 text-sm font-medium transition duration-200">
+        Log In
+      </button>
+    </a>
+    <a href="/auth/signup">
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+        Sign Up
+      </button>
+    </a>
+  </div>
+<% } else { %>
+  <!-- Show profile section if logged in -->
+  <div id="userProfile" class="flex items-center space-x-4">
+    <div class="relative">
+      <button id="profileBtn" class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition duration-200">
+        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+          <span id="userInitials"><%= currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase() %></span>
+        </div>
+        <span id="userName" class="text-sm font-medium"><%= currentUser.name %></span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+        <div class="py-2">
+          <a href="/dashboard" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-200">
+             Dashboard
+          </a>
+          <a href="/auth/logout" >
+           <button class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition duration-200">
+     Log Out
+  </button>
+</a>
+
+        </div>
+      </div>
+    </div>
+  </div>
+<% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Compact Search -->
+    <section class="gradient-bg text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-6">
+                        Find Your Perfect Doctor
+                    </h1>
+                    <p class="text-xl mb-8 text-blue-100">
+                        Search and book appointments with top-rated doctors in your area. Quality healthcare made simple and accessible.
+                    </p>
+                    
+                    <!-- Compact Search Bar -->
+                   <form action="/search" method="GET">
+  <div class="bg-white rounded-xl p-4 mb-8 shadow-2xl">
+    <div class="flex flex-col md:flex-row gap-3">
+      <!-- Doctor Name / Specialty / Location Search -->
+      <div class="flex-1 relative">
+        <input 
+          type="text" 
+          id="doctorSearch" 
+          name="query" 
+          placeholder="Search by doctor name, specialty, or location..." 
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 pr-10"
+        >
+        <svg class="absolute right-3 top-3 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+
+      <!-- Location Search (simple input, not dropdown) -->
+      <div class="md:w-48">
+        <input 
+          type="text" 
+          name="location" 
+          placeholder="Search by Location..." 
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+        >
+      </div>
+
+      <!-- Search Button -->
+      <div class="md:w-32">
+        <button 
+          type="button" 
+          id="searchBtn" 
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition duration-200">
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+
+
+ <!-- Search Results Section -->
+                    <div id="searchResults" class="hidden bg-white rounded-xl p-6 mb-8 shadow-2xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 id="searchResultsTitle" class="text-xl font-semibold text-gray-900">Search Results</h3>
+                            <button id="clearBtn" class="text-gray-500 hover:text-gray-700 text-sm">
+                                ✕ Clear
+                            </button>
+                        </div>
+                        <div id="searchResultsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Search results will be populated here -->
+                        </div>
+                        <div id="noResults" class="hidden text-center py-8">
+                            <div class="text-gray-400 text-lg mb-2">🔍</div>
+                            <p class="text-gray-600">No doctors found matching your search criteria.</p>
+                            <p class="text-gray-500 text-sm mt-2">Try searching with different keywords or check the spelling.</p>
+                        </div>
+                    </div>
+
+
+
+                    <div class="flex flex-col sm:flex-row gap-4">
+
+                        <button class="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg transition duration-200">
+                            Learn More
+                        </button>
+                    </div>
+                </div>
+
+
+                <div class="flex justify-center">
+                    <svg class="w-full max-w-md h-auto" viewBox="0 0 400 300" fill="none">
+                        <!-- Doctor illustration -->
+                        <rect x="50" y="80" width="300" height="200" rx="20" fill="white" opacity="0.1"/>
+                        <circle cx="200" cy="120" r="30" fill="white"/>
+                        <rect x="180" y="150" width="40" height="60" rx="20" fill="white"/>
+                        <rect x="160" y="170" width="80" height="40" rx="5" fill="#3B82F6"/>
+                        <rect x="170" y="180" width="60" height="3" fill="white"/>
+                        <rect x="170" y="190" width="40" height="3" fill="white"/>
+                        <circle cx="185" cy="110" r="2" fill="#1F2937"/>
+                        <circle cx="215" cy="110" r="2" fill="#1F2937"/>
+                        <path d="M190 125 Q200 135 210 125" stroke="#1F2937" stroke-width="2" fill="none"/>
+                        <!-- Stethoscope -->
+                        <circle cx="240" cy="140" r="8" fill="#EF4444"/>
+                        <path d="M240 148 Q250 160 240 170 Q230 160 240 148" stroke="#1F2937" stroke-width="3" fill="none"/>
+                        <!-- Medical cross -->
+                        <rect x="120" y="100" width="20" height="6" fill="#EF4444"/>
+                        <rect x="127" y="93" width="6" height="20" fill="#EF4444"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Doctors Section with Backend Integration -->
+    <section id="doctors" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Top Doctors</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Meet our highly qualified medical professionals with excellent patient reviews and years of experience.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Dynamic Doctor Cards with EJS -->
+                <% doctors.forEach((doctor) => { %>
+                    <a href="/doctors/<%= doctor._id %>" class="block bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100 hover:shadow-lg transition duration-200">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <!-- Doctor Photo Circle with Fallback to Initials -->
+                                <div class="relative w-12 h-12 mr-3">
+                                    <% if (doctor.photo) { %>
+                                        <img src="<%= doctor.photo %>" alt="<%= doctor.name %>" class="w-12 h-12 rounded-full object-cover border-2 border-blue-200">
+                                    <% } else { %>
+                                        <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                            <%= doctor.name.split(' ').map(word => word[0]).join('').toUpperCase() %>
+                                        </div>
+                                    <% } %>
+                                    <!-- Online Status Indicator -->
+                                    <!-- <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div> -->
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-gray-900">Dr.<%= doctor.name %></h3>
+                                    <p class="text-blue-600 text-sm font-medium"><%= doctor.specialization %></p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center mb-3">
+                                <div class="flex text-yellow-400 text-sm mr-2">⭐⭐⭐⭐⭐</div>
+                                <span class="text-gray-600 text-xs">
+                                    <%= doctor.rating || '4.9' %> (<%= doctor.reviewCount || '127' %>)
+                                </span>
+                            </div>
+                            
+                            <p class="text-gray-600 text-sm mb-4">
+                                <%= doctor.experience %> years in <%= doctor.specialization.toLowerCase() %>
+                            </p>
+                            
+                            <div class="flex items-center justify-between mb-4 text-xs text-gray-500">
+                                <span class="flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <%= doctor.clinicName %>,<%= doctor.clinicAddress || "Location not available" %>
+                                </span>
+                                <span class="flex items-center font-semibold text-green-600">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                                    </svg>
+                                    ₹<%= doctor.fees %>
+                                </span>
+                            </div>
+
+                            <!-- Book Now Button -->
+                            <div class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold text-center transition duration-200">
+                                Book Now
+                            </div>
+                        </div>
+                    </a>
+                <% }) %>
+            </div>
+
+            <div class="text-center mt-12">
+                <a href="/doctors" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-8 py-3 rounded-lg font-semibold transition duration-200 inline-block">
+                    View All Doctors
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Choose MediCare?</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    We make healthcare accessible with our easy-to-use platform and network of qualified professionals.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center p-8 rounded-xl bg-blue-50 card-hover">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Top Rated Doctors</h3>
+                    <p class="text-gray-600">Connect with highly qualified and experienced medical professionals in your area.</p>
+                </div>
+                <div class="text-center p-8 rounded-xl bg-green-50 card-hover">
+                    <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Easy Booking</h3>
+                    <p class="text-gray-600">Book appointments in just a few clicks. No waiting on hold or complicated processes.</p>
+                </div>
+                <div class="text-center p-8 rounded-xl bg-purple-50 card-hover">
+                    <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">24/7 Support</h3>
+                    <p class="text-gray-600">Round-the-clock customer support to help you with any questions or concerns.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Services</h2>
+                <p class="text-xl text-gray-600">Comprehensive healthcare services for all your medical needs</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-md card-hover border border-gray-100">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">General Medicine</h3>
+                    <p class="text-gray-600 text-sm">Comprehensive primary care for all ages</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md card-hover border border-gray-100">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Cardiology</h3>
+                    <p class="text-gray-600 text-sm">Heart health specialists and treatments</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md card-hover border border-gray-100">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Pediatrics</h3>
+                    <p class="text-gray-600 text-sm">Specialized care for children and infants</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md card-hover border border-gray-100">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Dermatology</h3>
+                    <p class="text-gray-600 text-sm">Skin, hair, and nail health experts</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-blue-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Book Your Appointment?</h2>
+            <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                Join thousands of satisfied patients who trust MediCare for their healthcare needs.
+            </p>
+            <button class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition duration-200 shadow-lg">
+                Get Started Today
+            </button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <svg class="h-8 w-8 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/>
+                        </svg>
+                        <span class="text-xl font-bold">MediCare</span>
+                    </div>
+                    <p class="text-gray-400">Your trusted partner in healthcare, making quality medical services accessible to everyone.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-200">Home</a></li>
+                        <li><a href="#doctors" class="text-gray-400 hover:text-white transition duration-200">Doctors</a></li>
+                        <li><a href="#services" class="text-gray-400 hover:text-white transition duration-200">Services</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-200">About Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Services</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-200">General Medicine</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-200">Cardiology</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-200">Pediatrics</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-200">Dermatology</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Info</h3>
+                    <div class="space-y-2 text-gray-400">
+                        <p>📞 (555) 123-4567</p>
+                        <p>✉️ info@medicare.com</p>
+                        <p>📍 123 Health St, Medical City</p>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 MediCare. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+</body>
+    <script>
+      // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+  // Toggle dropdown when profile button is clicked
+  document.getElementById("profileBtn")?.addEventListener("click", function (e) {
+    e.stopPropagation();
+    const dropdown = document.getElementById("profileDropdown");
+    dropdown.classList.toggle("hidden");
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", function () {
+    document.getElementById("profileDropdown")?.classList.add("hidden");
+  });
+
+
+//search ajax
+document.getElementById("searchBtn").addEventListener("click", async () => {
+    const query = document.getElementById("doctorSearch").value;
+    const location = document.querySelector("select").value;
+
+    try {
+        const res = await fetch(`/search-doctors?query=${query}&location=${location}`);
+        const doctors = await res.json();
+        const container = document.getElementById("doctorResults");
+        container.innerHTML = ""; // clear existing
+
+        if (doctors.length === 0) {
+            container.innerHTML = `<p class="text-center text-gray-600 col-span-4">No doctors found.</p>`;
+            return;
+        }
+
+        doctors.forEach(doc => {
+            container.innerHTML += `
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+                                ${doc.name.split(" ").map(n => n[0]).join("").slice(0,2)}
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">${doc.name}</h3>
+                                <p class="text-blue-600 text-sm font-medium">${doc.specialty}</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4">${doc.experience || "Experience not available"}</p>
+                        <div class="flex items-center justify-between mb-4 text-xs text-gray-500">
+                            <span>📍 ${doc.location}</span>
+                            <span>💰 ${doc.fee || "$100"}</span>
+                        </div>
+                        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold transition duration-200">
+                            Book Now
+                        </button>
+                    </div>
+                </div>`;
+        });
+    } catch (err) {
+        console.error("Search error:", err);
+    }
+});
+
+
+document.getElementById('searchBtn').addEventListener('click', async (event) => {
+  event.preventDefault();
+
+  const keyword = document.getElementById('doctorSearch').value.trim();
+  const location = document.querySelector('select')?.value.trim() || '';
+
+  if (!keyword && !location) {
+    alert('Please enter a search keyword or location');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/search-doctors?keyword=${encodeURIComponent(keyword)}&location=${encodeURIComponent(location)}`);
+    const doctors = await res.json();
+
+    const container = document.getElementById('searchResultsContainer');
+    const resultsBox = document.getElementById('searchResults');
+    const title = document.getElementById('searchResultsTitle');
+    const noResults = document.getElementById('noResults');
+
+    container.innerHTML = '';
+
+    if (!doctors.length) {
+      noResults.classList.remove('hidden');
+      resultsBox.classList.remove('hidden');
+      title.textContent = `Search Results`;
+      return;
+    }
+
+    noResults.classList.add('hidden');
+    resultsBox.classList.remove('hidden');
+    title.textContent = `Search Results (${doctors.length} found)`;
+
+    const seen = new Set();
+
+    doctors.forEach(doctor => {
+      if (seen.has(doctor._id)) return; // prevent duplicates
+      seen.add(doctor._id);
+
+      const card = document.createElement('div');
+      card.className = 'bg-white p-4 rounded-lg shadow-md';
+
+      card.innerHTML = `
+        <h4 class="text-lg font-semibold text-gray-800 mb-1">Dr.${doctor.name || "No Name"}</h4>
+        <p class="text-sm text-gray-600 mb-1">${doctor.specialization || "No Specialization"}</p>
+        <p class="text-sm text-gray-600 mb-1">📍 ${doctor.clinicAddress || "No Location"}</p>
+        <p class="text-sm text-gray-600 mb-2">🏥 ${doctor.clinicName || "No Clinic Name"}</p>
+         <a href="/doctors/${doctor._id}" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-semibold text-center transition duration-200">
+                                Book Now
+                            </a>
+      `;
+
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error("Search error:", err);
+    alert('Failed to fetch search results.');
+  }
+});
+
+
+
+
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.getElementById('doctorSearch').value = '';
+  document.getElementById('searchResults').classList.add('hidden');
+  document.getElementById('searchResultsContainer').innerHTML = '';
+  document.getElementById('searchResultsTitle').textContent = '';
+  document.getElementById('noResults').classList.add('hidden');
+});
+
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toastElList = [].slice.call(document.querySelectorAll('.toast'))
+    toastElList.map(function (toastEl) {
+      const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+      toast.show();
+    });
+  });
+</script>
+
+
+
+
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96afe65f4086f64c',t:'MTc1NDQ5NzYyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

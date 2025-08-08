@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MediCare</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body {
+      overflow-x: hidden;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #f8f9fa;
+      padding-top: 1rem;
+      position: fixed;
+    }
+    .sidebar a {
+      display: block;
+      padding: 10px 15px;
+      color: #000;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      background-color: #e9ecef;
+    }
+    .content-section {
+      padding: 20px;
+    }
+    @media (min-width: 768px) {
+      .content-section {
+        margin-left: 16.666667%;
+      }
+    }
+    .offcanvas-body a {
+      margin-bottom: 10px;
+    }
+    .section {
+      display: none;
+      margin-bottom: 2rem;
+    }
+    .section.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-dark bg-primary px-3 sticky-top">
+    <div class="d-flex align-items-center">
+      <button class="btn d-md-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+        <i class="fas fa-bars text-light"></i>
+      </button>
+      <a class="navbar-brand fw-bold" href="/"></i>DocConnect</a>
+    </div>
+    <a class="nav-link fw-bold text-light" href="/auth/logout">Log Out</a>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-3 col-lg-2 d-none d-md-block sidebar">
+        <a href="#" data-section="home">🏠 Home</a>
+        <a href="#" data-section="requests">📋 Requests</a>
+        <a href="#" data-section="history">📜 History</a>
+        <a href="#" data-section="makeAdmin">👤 Make Admin</a>
+        <a href="#" data-section="viewAdmin">👥 View Admin</a>
+        <a href="#" data-section="users">🧑 Users</a>
+      </nav>
+
+      <main class="col-md-9 ms-sm-auto col-lg-10 content-section">
+        <section id="home" class="section active">
+          <h3>Dashboard Home</h3>
+          <p>Welcome to Admin Panel.</p>
+        </section>
+
+        <section id="requests" class="section">
+  <h3>Doctor Approval Requests</h3>
+
+  <% if (pendingDoctors.length === 0) { %>
+    <p>No pending requests.</p>
+  <% } else { %>
+    <div class="row">
+      <% pendingDoctors.forEach(doctor => { %>
+        <div class="col-md-4">
+          <div class="card mb-3 shadow-sm">
+            <img src="<%= doctor.photo || 'https://via.placeholder.com/150' %>" class="card-img-top" alt="Doctor photo" style="height: 200px; object-fit: cover;">
+            <div class="card-body">
+              <h5 class="card-title"><%= doctor.name %></h5>
+              <p class="card-text mb-1"><strong>Registration No:</strong> <%= doctor.registrationNumber %></p>
+              <p class="card-text mb-1"><strong>Clinic:</strong> <%= doctor.clinicName %></p>
+              <% if (doctor.addedBy) { %>
+                <p class="card-text mb-2"><strong>Owner:</strong> <%= doctor.addedBy.username %></p>
+              <% } %>
+
+              <!-- View Button -->
+              <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#doctorModal-<%= doctor._id %>">View</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal for Doctor -->
+        <div class="modal fade" id="doctorModal-<%= doctor._id %>" tabindex="-1" aria-labelledby="doctorModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+            
+                <div class="modal-header">
+                  <h5 class="modal-title" id="doctorModalLabel">Doctor Details</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                  <p><strong>Name:</strong> <%= doctor.name %></p>
+                  <p><strong>Degree:</strong> <%= doctor.degree %></p>
+                  <p><strong>Registration No:</strong> <%= doctor.registrationNumber %></p>
+                  <p><strong>Specialization:</strong> <%= doctor.specialization %></p>
+                  <p><strong>Clinic Name:</strong> <%= doctor.clinicName %></p>
+                  <p><strong>Clinic Address:</strong> <%= doctor.clinicAddress %></p>
+                  <p><strong>Clinic Contact:</strong> <%= doctor.clinicContact %></p>
+                  <% if (doctor.addedBy) { %>
+                    <p><strong>Added By:</strong> <%= doctor.addedBy.username %></p>
+                  <% } %>
+
+                  <!-- Reject Reason -->
+                  <div class="mb-3">
+                    <label class="form-label">Reason for Rejection</label>
+                    <textarea name="reason" class="form-control" rows="3" placeholder="Write rejection reason here..."></textarea>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  <!-- Approve form -->
+                  <form method="POST" action="/admin/doctor/<%= doctor._id %>/approve" class="d-inline">
+                    <button type="submit" class="btn btn-success">Approve</button>
+                  </form>
+
+                  <!-- Reject form submit (current form) -->
+                  <form method="POST" action="/admin/doctor/<%= doctor._id %>/reject?_method=POST" class="d-inline">
+    <input type="hidden" name="reason" value=""> <!-- JS will set this -->
+    <button type="submit" class="btn btn-danger">Reject</button>
+  </form>
+                </div>
+             
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+
+
+
+
+
+
+
+        <section id="history" class="section">
+          <h3>Approval History</h3>
+          <p>Approved/rejected doctor history here.</p>
+        </section>
+
+        <section id="makeAdmin" class="section">
+          <h3>Make New Admin</h3>
+          <p>Form to assign admin rights.</p>
+        </section>
+
+        <section id="viewAdmin" class="section">
+          <h3>All Admins</h3>
+          <p>List of all admins.</p>
+        </section>
+
+        <section id="users" class="section">
+          <h3>All Users</h3>
+          <p>All users in the system.</p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Admin Dashboard</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <a class="btn btn-light w-100" href="#" data-section="home" data-bs-dismiss="offcanvas">🏠 Home</a>
+      <a class="btn btn-light w-100" href="#" data-section="requests" data-bs-dismiss="offcanvas">📋 Requests</a>
+      <a class="btn btn-light w-100" href="#" data-section="history" data-bs-dismiss="offcanvas">📜 History</a>
+      <a class="btn btn-light w-100" href="#" data-section="makeAdmin" data-bs-dismiss="offcanvas">👤 Make Admin</a>
+      <a class="btn btn-light w-100" href="#" data-section="viewAdmin" data-bs-dismiss="offcanvas">👥 View Admin</a>
+      <a class="btn btn-light w-100" href="#" data-section="users" data-bs-dismiss="offcanvas">🧑 Users</a>
+    </div>
+  </div>
+
+  <script>
+    const links = document.querySelectorAll('[data-section]');
+    const sections = document.querySelectorAll('.section');
+
+    links.forEach(link => {
+      link.addEventListener('click', () => {
+        const target = link.getAttribute('data-section');
+        sections.forEach(sec => sec.classList.remove('active'));
+        document.getElementById(target).classList.add('active');
+      });
+    });
+  </script>
+
+</body>
+</html>
