@@ -15,6 +15,7 @@
         .search-focus:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
     </style>
    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
 
 </head>
@@ -270,7 +271,7 @@
             </div>
 
             <div class="text-center mt-12">
-                <a href="/doctors" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-8 py-3 rounded-lg font-semibold transition duration-200 inline-block">
+                <a class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-8 py-3 rounded-lg font-semibold transition duration-200 inline-block">
                     View All Doctors
                 </a>
             </div>
@@ -395,7 +396,7 @@
                 <div>
                     <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-200">Home</a></li>
+                        <li><a href="#home" class="text-gray-400 hover:text-white transition duration-200">Home</a></li>
                         <li><a href="#doctors" class="text-gray-400 hover:text-white transition duration-200">Doctors</a></li>
                         <li><a href="#services" class="text-gray-400 hover:text-white transition duration-200">Services</a></li>
                         <li><a href="#" class="text-gray-400 hover:text-white transition duration-200">About Us</a></li>
@@ -413,20 +414,30 @@
                 <div>
                     <h3 class="text-lg font-semibold mb-4">Contact Info</h3>
                     <div class="space-y-2 text-gray-400">
-                        <p>📞 (555) 123-4567</p>
-                        <p>✉️ info@medicare.com</p>
-                        <p>📍 123 Health St, Medical City</p>
+                        <p>
+  <i class="bi bi-telephone"></i> xxxxxxxx95
+</p>
+<p>
+  <i class="bi bi-envelope"></i>
+  <a href="mailto:goswamisoumen02@gmail.com">goswamisoumen02@gmail.com</a>
+</p>
+<p>
+  <i class="bi bi-geo-alt"></i> Kolkata, West Bengal
+</p>
+
+
                     </div>
                 </div>
             </div>
             <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; 2024 MediCare. All rights reserved.</p>
+                <p>&copy; 2025 MediCare. All rights reserved.</p>
             </div>
         </div>
     </footer>
     
 </body>
     <script>
+        
       // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -544,8 +555,8 @@ document.getElementById('searchBtn').addEventListener('click', async (event) => 
       card.innerHTML = `
         <h4 class="text-lg font-semibold text-gray-800 mb-1">Dr.${doctor.name || "No Name"}</h4>
         <p class="text-sm text-gray-600 mb-1">${doctor.specialization || "No Specialization"}</p>
-        <p class="text-sm text-gray-600 mb-1">📍 ${doctor.clinicAddress || "No Location"}</p>
-        <p class="text-sm text-gray-600 mb-2">🏥 ${doctor.clinicName || "No Clinic Name"}</p>
+        <p class="text-sm text-gray-600 mb-1"> ${doctor.clinicAddress || "No Location"}</p>
+        <p class="text-sm text-gray-600 mb-2"> ${doctor.clinicName || "No Clinic Name"}</p>
          <a href="/doctors/${doctor._id}" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-semibold text-center transition duration-200">
                                 Book Now
                             </a>
